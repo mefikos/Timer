@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>DNATimer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      padding: 0;
+    }
+
+    #content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      position: relative;
+      box-sizing: border-box;
+      padding: 20px;
+    }
+
+    #topControls {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      display: flex;
+      gap: clamp(5px, 1vw, 10px);
+      z-index: 1000;
+    }
+
+    #fullscreenToggle, #muteBtn {
+      font-size: clamp(20px, 4vw, 28px);
+      cursor: pointer;
+      background-color: rgba(255, 255, 255, 0.1);
+      color: white;
+      padding: clamp(6px, 1.5vw, 10px) clamp(8px, 2vw, 12px);
+      border-radius: 8px;
+      user-select: none;
+      transition: background-color 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #fullscreenToggle:hover, #muteBtn:hover {
+      background-color: rgba(255, 255, 255, 0.3);
+    }
+
+    #zoomControls {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      display: flex;
+      gap: clamp(5px, 1vw, 10px);
+      z-index: 1000;
+    }
+
+    #zoomControls button {
+      background-color: rgba(255, 255, 255, 0.1);
+      border: none;
+      padding: clamp(6px, 1.5vw, 10px) clamp(8px, 2vw, 12px);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: clamp(18px, 3.5vw, 22px);
+      color: white;
+      transition: background-color 0.3s;
+    }
+
+    #zoomControls button:disabled {
+      background-color: rgba(255, 255, 255, 0.05);
+      cursor: not-allowed;
+    }
+
+    #zoomControls button:hover:not(:disabled) {
+      background-color: rgba(255, 255, 255, 0.3);
+    }
+
+    #timerContainer {
+      position: relative;
+      display: inline-block;
+      margin: clamp(20px, 8vh, 60px) 0;
+    }
+
+    #timer {
+      direction: ltr;
+      color: white;
+      white-space: nowrap;
+      transition: font-size 0.3s ease;
+      text-align: center;
+      font-weight: bold;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    }
+
+    .input-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .inc-dec-btn {
+      background-color: #444;
+      border: 2px solid #666;
+      color: white;
+      font-size: clamp(16px, 4vw, 22px);
+      padding: 5px 10px;
+      cursor: pointer;
+      border-radius: 5px;
+      width: clamp(40px, 10vw, 60px);
+      text-align: center;
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    .inc-dec-btn:hover {
+      background-color: #555;
+    }
+
+    #minutesContainer {
+      position: absolute;
+      top: 50%;
+      left: 10px;
+      transform: translateY(-50%);
+      display: flex;
+      align-items: center;
+      gap: clamp(8px, 2vw, 15px);
+    }
+
+    #secondsContainer {
+      position: absolute;
+      top: 50%;
+      right: 10px;
+      transform: translateY(-50%);
+      display: flex;
+      align-items: center;
+      gap: clamp(8px, 2vw, 15px);
+    }
+
+    .controls {
+      position: fixed;
+      bottom: 20px;
+      display: flex;
+      gap: clamp(10px, 3vw, 20px);
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    input {
+      font-size: clamp(16px, 4vw, 24px);
+      padding: clamp(8px, 2vw, 12px) clamp(12px, 3vw, 20px);
+      width: clamp(80px, 18vw, 100px);
+      text-align: center;
+      background-color: #333;
+      border: 2px solid #555;
+      color: white;
+      border-radius: 8px;
+      box-sizing: border-box;
+      transition: border-color 0.3s, background-color 0.3s;
+      -webkit-appearance: none;
+      -moz-appearance: textfield;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #777;
+      background-color: #444;
+    }
+
+    button {
+      font-size: clamp(16px, 4vw, 22px);
+      padding: clamp(10px, 2.5vw, 14px) clamp(15px, 4vw, 25px);
+      margin: clamp(4px, 1vw, 8px);
+      min-width: clamp(50px, 12vw, 70px);
+      text-align: center;
+      background-color: #444;
+      border: 2px solid #666;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      box-sizing: border-box;
+      transition: background-color 0.3s, border-color 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    button:hover {
+      background-color: #555;
+      border-color: #777;
+    }
+
+    button i {
+      font-size: 1.2em;
+      color: white;
+    }
+
+    label {
+      font-size: clamp(14px, 3.5vw, 20px);
+      font-weight: bold;
+      min-width: clamp(40px, 12vw, 60px);
+      text-align: center;
+      border: 1px solid gray;
+      padding: 5px;
+      border-radius: 5px;
+      background-color: rgba(128, 128, 128, 0.2);
+    }
+
+    @keyframes blink8times {
+      0%, 50% { color: red; }
+      50.1%, 99.9% { color: black; }
+      100% { color: red; }
+    }
+
+    .blink8 {
+      animation: blink8times 1s step-start 8 forwards;
+      animation-fill-mode: forwards;
+    }
+
+    .fade-out {
+      opacity: 0;
+      transition: opacity 0.5s ease-out;
+      pointer-events: none;
+    }
+
+    .fade-in {
+      opacity: 1;
+      transition: opacity 0.5s ease-in;
+      pointer-events: auto;
+    }
+
+    @media screen and (max-width: 768px) and (orientation: portrait) {
+      body::before {
+        content: "נא לסובב את המסך לתצוגה אופקית";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: black;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        text-align: center;
+        z-index: 10000;
+      }
+      
+      #content {
+        display: none;
+      }
+    }
+
+    @media screen and (max-width: 768px) and (orientation: landscape) {
+      #content {
+        padding: 10px;
+        justify-content: center;
+      }
+
+      #topControls {
+        top: 10px;
+        right: 10px;
+        gap: 8px;
+      }
+
+      #zoomControls {
+        top: 10px;
+        left: 10px;
+        gap: 8px;
+      }
+
+      #minutesContainer {
+        position: absolute;
+        top: 50%;
+        left: 10px;
+        transform: translateY(-50%);
+        gap: 8px;
+      }
+
+      #secondsContainer {
+        position: absolute;
+        top: 50%;
+        right: 10px;
+        transform: translateY(-50%);
+        gap: 8px;
+      }
+
+      #timerContainer {
+        margin: 0;
+      }
+
+      #timer {
+        font-size: 15vw;
+      }
+
+      .controls {
+        bottom: 10px;
+        gap: 15px;
+      }
+      
+      input {
+        width: 60px;
+        font-size: 14px;
+        padding: 6px 8px;
+      }
+      
+      button {
+        min-width: 50px;
+        font-size: 14px;
+        padding: 8px 12px;
+      }
+
+      .inc-dec-btn {
+        width: 35px;
+        font-size: 14px;
+        padding: 4px 6px;
+      }
+
+      label {
+        font-size: 12px;
+        padding: 3px;
+        min-width: 35px;
+      }
+
+      #fullscreenToggle, #muteBtn {
+        font-size: 18px;
+        padding: 6px 8px;
+      }
+
+      #zoomControls button {
+        font-size: 16px;
+        padding: 6px 8px;
+      }
+    }
+
+    @media screen and (max-width: 768px) {
+      #content {
+        padding: 15px;
+      }
+      
+      #minutesContainer, #secondsContainer {
+        gap: 10px;
+      }
+      
+      .controls {
+        gap: 15px;
+      }
+      
+      input {
+        width: 95px;
+      }
+      
+      button {
+        min-width: 60px;
+      }
+    }
+
+    @media screen and (max-width: 480px) {
+      #content {
+        padding: 10px;
+      }
+      
+      input {
+        width: 85px;
+      }
+      
+      button {
+        min-width: 55px;
+        padding: 12px 20px;
+      }
+    }
+
+    @media screen and (min-width: 1200px) {
+      input {
+        font-size: 20px;
+        padding: 10px 16px;
+        width: 95px;
+      }
+      
+      button {
+        font-size: 18px;
+        padding: 12px 20px;
+        min-width: 65px;
+      }
+      
+      label {
+        font-size: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="content">
+    <div id="topControls">
+      <div id="fullscreenToggle" title="מסך מלא"><i class="fas fa-expand"></i></div>
+      <div id="muteBtn" title="הצליל פעיל"><i class="fas fa-volume-up"></i></div>
+    </div>
+
+    <div id="zoomControls">
+      <button id="zoomOutBtn" onclick="zoomOut()" title="הקטן טיימר"><i class="fas fa-search-minus"></i></button>
+      <button id="zoomInBtn" onclick="zoomIn()" title="הגדל טיימר"><i class="fas fa-search-plus"></i></button>
+    </div>
+
+    <div id="minutesContainer">
+      <label for="minutesInput">דקות</label>
+      <div class="input-container">
+        <button class="inc-dec-btn" onmousedown="startPress('minutesInput', 1)" onmouseup="stopPress()" onmouseleave="stopPress()" ontouchstart="startPress('minutesInput', 1)" ontouchend="stopPress()">+</button>
+        <input type="number" id="minutesInput" value="0" min="0" max="59" />
+        <button class="inc-dec-btn" onmousedown="startPress('minutesInput', -1)" onmouseup="stopPress()" onmouseleave="stopPress()" ontouchstart="startPress('minutesInput', -1)" ontouchend="stopPress()">-</button>
+      </div>
+    </div>
+
+    <div id="secondsContainer">
+      <div class="input-container">
+        <button class="inc-dec-btn" onmousedown="startPress('secondsInput', 1)" onmouseup="stopPress()" onmouseleave="stopPress()" ontouchstart="startPress('secondsInput', 1)" ontouchend="stopPress()">+</button>
+        <input type="number" id="secondsInput" value="0" min="0" max="59" />
+        <button class="inc-dec-btn" onmousedown="startPress('secondsInput', -1)" onmouseup="stopPress()" onmouseleave="stopPress()" ontouchstart="startPress('secondsInput', -1)" ontouchend="stopPress()">-</button>
+      </div>
+      <label for="secondsInput">שניות</label>
+    </div>
+
+    <div id="timerContainer">
+      <div id="timer">00:00</div>
+    </div>
+
+    <div class="controls">
+      <button id="playPauseBtn" onclick="playPause()" title="התחל"><i class="fas fa-play"></i></button>
+      <button id="stopBtn" onclick="stopTimer()" title="עצור"><i class="fas fa-stop"></i></button>
+    </div>
+  </div>
+
+  <script>
+    let interval = null;
+    let remainingTime = 0;
+    let isPaused = false;
+    let endTime = null;
+    let blinkingTimeout = null;
+    let finishRedTimeout = null;
+    let isFinished = false;
+    let currentZoomLevel = 2; // ברירת מחדל ראשונית, תשתנה בהתאם למסך
+    let initialTime = 0;
+    let hideTimeout = null;
+    let isMobile = window.innerWidth <= 768;
+    let pressInterval = null;
+    let pressTimeout = null;
+
+    const timerEl = document.getElementById("timer");
+    const timerContainer = document.getElementById("timerContainer");
+    const minutesInput = document.getElementById("minutesInput");
+    const secondsInput = document.getElementById("secondsInput");
+    const playPauseBtn = document.getElementById("playPauseBtn");
+    const stopBtn = document.getElementById("stopBtn");
+    const zoomInBtn = document.getElementById("zoomInBtn");
+    const zoomOutBtn = document.getElementById("zoomOutBtn");
+    const muteBtn = document.getElementById("muteBtn");
+    const fullscreenToggle = document.getElementById("fullscreenToggle");
+    const topControls = document.getElementById("topControls");
+    const zoomControls = document.getElementById("zoomControls");
+    const minutesContainer = document.getElementById("minutesContainer");
+    const secondsContainer = document.getElementById("secondsContainer");
+    const controls = document.querySelector(".controls");
+
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    const audioCtx = new AudioContext();
+
+    let soundTimeouts = [];
+    let isPlayingSound = false;
+    let isMuted = false;
+
+    const zoomLevels = [
+      { vw: 8, description: "קטן מאוד" },
+      { vw: 12, description: "קטן" },
+      { vw: 16, description: "בינוני" },
+      { vw: 22, description: "גדול" },
+      { vw: 28, description: "גדול מאוד" },
+      { vw: 35, description: "ענק" }
+    ];
+
+    function toggleMute() {
+      isMuted = !isMuted;
+      const icon = muteBtn.querySelector("i");
+      if (isMuted) {
+        icon.classList.remove("fa-volume-up");
+        icon.classList.add("fa-volume-mute");
+        muteBtn.title = "הסאונד מושתק";
+      } else {
+        icon.classList.remove("fa-volume-mute");
+        icon.classList.add("fa-volume-up");
+        muteBtn.title = "הצליל פעיל";
+      }
+    }
+
+    function applyFontSize() {
+      const fontSize = zoomLevels[currentZoomLevel].vw;
+
+      if (window.innerWidth <= 768) {
+        const mobileFontSize = fontSize * 1.2;
+        timerEl.style.fontSize = `${mobileFontSize}vw`;
+      } else if (window.innerWidth > 1200) {
+        const pixelSize = Math.min(fontSize * window.innerWidth / 100, fontSize * 15);
+        timerEl.style.fontSize = `${pixelSize}px`;
+      } else {
+        timerEl.style.fontSize = `${fontSize}vw`;
+      }
+
+      zoomInBtn.disabled = currentZoomLevel >= zoomLevels.length - 1;
+      zoomOutBtn.disabled = currentZoomLevel <= 0;
+    }
+
+    function zoomIn() {
+      if (currentZoomLevel < zoomLevels.length - 1) {
+        currentZoomLevel++;
+        applyFontSize();
+      }
+    }
+
+    function zoomOut() {
+      if (currentZoomLevel > 0) {
+        currentZoomLevel--;
+        applyFontSize();
+      }
+    }
+
+    function startPress(id, delta) {
+      const input = document.getElementById(id);
+      increment(input, delta);
+      pressTimeout = setTimeout(() => {
+        pressInterval = setInterval(() => increment(input, delta), 100);
+      }, 500);
+    }
+
+    function stopPress() {
+      if (pressTimeout) {
+        clearTimeout(pressTimeout);
+        pressTimeout = null;
+      }
+      if (pressInterval) {
+        clearInterval(pressInterval);
+        pressInterval = null;
+      }
+    }
+
+    function increment(input, delta) {
+      let value = parseInt(input.value) || 0;
+      value = Math.max(0, Math.min(59, value + delta));
+      input.value = value;
+      liveUpdate();
+    }
+
+    function playTone(duration = 200, frequency = 1800, type = 'square') {
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      oscillator.type = type;
+      oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+      gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.25, audioCtx.currentTime + 0.01);
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      oscillator.start();
+      gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration / 1000);
+      oscillator.stop(audioCtx.currentTime + duration / 1000);
+    }
+
+    function playSoundRepeatedly(times = 8, delay = 1000, callback) {
+      let count = 0;
+      isPlayingSound = true;
+      soundTimeouts = [];
+      function playNext() {
+        if (!isPlayingSound) return;
+        if (count >= times) {
+          isPlayingSound = false;
+          if (callback) callback();
+          return;
+        }
+        if (!isMuted) {
+          playTone(200, 1800, 'square');
+        }
+        count++;
+        const timeoutId = setTimeout(playNext, delay);
+        soundTimeouts.push(timeoutId);
+      }
+      playNext();
+    }
+
+    function stopSound() {
+      isPlayingSound = false;
+      soundTimeouts.forEach(clearTimeout);
+      soundTimeouts = [];
+    }
+
+    function formatTime(seconds) {
+      const m = Math.floor(seconds / 60);
+      const s = seconds % 60;
+      return String(m).padStart(2, '0') + ":" + String(s).padStart(2, '0');
+    }
+
+    function updateDisplay() {
+      timerEl.textContent = formatTime(remainingTime);
+    }
+
+    function startBlinking8Times() {
+      timerEl.classList.remove("blink8");
+      void timerEl.offsetWidth;
+      timerEl.classList.add("blink8");
+      if (blinkingTimeout) clearTimeout(blinkingTimeout);
+      blinkingTimeout = setTimeout(() => {
+        timerEl.classList.remove("blink8");
+        timerEl.style.color = "red";
+      }, 8000);
+    }
+
+    function stopBlinking() {
+      if (blinkingTimeout) clearTimeout(blinkingTimeout);
+      timerEl.classList.remove("blink8");
+      timerEl.style.visibility = 'visible';
+    }
+
+    function hideControls() {
+      minutesContainer.classList.add('fade-out');
+      secondsContainer.classList.add('fade-out');
+      controls.classList.add('fade-out');
+    }
+
+    function showControls() {
+      minutesContainer.classList.remove('fade-out');
+      minutesContainer.classList.add('fade-in');
+      secondsContainer.classList.remove('fade-out');
+      secondsContainer.classList.add('fade-in');
+      controls.classList.remove('fade-out');
+      controls.classList.add('fade-in');
+    }
+
+    function scheduleHide() {
+      if (hideTimeout) clearTimeout(hideTimeout);
+      hideTimeout = setTimeout(hideControls, 2000);
+    }
+
+    function startTimer() {
+      clearFinishState();
+      let minutes = parseInt(minutesInput.value);
+      let seconds = parseInt(secondsInput.value);
+      if ((isNaN(minutes) || minutes < 0 || minutes > 59) || (isNaN(seconds) || seconds < 0 || seconds > 59)) {
+        alert("נא להזין דקות ושניות תקינות (0-59)");
+        return;
+      }
+      remainingTime = (minutes * 60) + seconds;
+      initialTime = remainingTime;
+      if (remainingTime === 0) {
+        alert("יש להזין זמן גדול מ-0");
+        return;
+      }
+      isPaused = false;
+      setPlayPauseIcon(true);
+      endTime = Date.now() + remainingTime * 1000;
+      if (interval) clearInterval(interval);
+      interval = setInterval(tick, 100);
+      updateDisplay();
+      scheduleHide(); // הסתרה אחרי 2 שניות ראשוניות, כמו מקודם
+    }
+
+    function tick() {
+      if (!isPaused) {
+        const timeLeft = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
+        remainingTime = timeLeft;
+        updateDisplay();
+        if (timeLeft <= 0) {
+          clearInterval(interval);
+          interval = null;
+          timerEl.textContent = "00:00";
+          isFinished = true;
+          hideControls();
+          startBlinking8Times();
+          playSoundRepeatedly(8, 1000, () => {
+            stopBlinking();
+            if (finishRedTimeout) clearTimeout(finishRedTimeout);
+            finishRedTimeout = setTimeout(() => {
+              resetAfterFinish();
+            }, 5000);
+          });
+        }
+      }
+    }
+
+    function playPause() {
+      if (isFinished) {
+        resetAfterFinish();
+        startTimer();
+        return;
+      }
+      if (interval === null) {
+        startTimer();
+      } else {
+        if (isPaused) {
+          isPaused = false;
+          endTime = Date.now() + remainingTime * 1000;
+          setPlayPauseIcon(true);
+          scheduleHide(); // הסתרה אחרי 2 שניות כשממשיך
+        } else {
+          isPaused = true;
+          setPlayPauseIcon(false);
+          showControls();
+        }
+      }
+    }
+
+    function stopTimer() {
+      clearInterval(interval);
+      interval = null;
+      let m = parseInt(minutesInput.value) || 0;
+      let s = parseInt(secondsInput.value) || 0;
+      remainingTime = m * 60 + s;
+      initialTime = 0;
+      updateDisplay();
+      isPaused = false;
+      clearFinishState();
+      setPlayPauseIcon(false);
+      showControls();
+    }
+
+    function resetAfterFinish() {
+      stopSound();
+      stopBlinking();
+      if (finishRedTimeout) {
+        clearTimeout(finishRedTimeout);
+        finishRedTimeout = null;
+      }
+      let m = parseInt(minutesInput.value) || 0;
+      let s = parseInt(secondsInput.value) || 0;
+      remainingTime = m * 60 + s;
+      initialTime = 0;
+      updateDisplay();
+      isFinished = false;
+      timerEl.style.color = "white";
+      playPauseBtn.style.display = "flex";
+      minutesInput.style.display = "block";
+      secondsInput.style.display = "block";
+      document.querySelector('label[for="minutesInput"]').style.display = "block";
+      document.querySelector('label[for="secondsInput"]').style.display = "block";
+      document.querySelectorAll('.inc-dec-btn').forEach(btn => btn.style.display = 'block');
+      setPlayPauseIcon(false);
+      showControls();
+    }
+
+    function clearFinishState() {
+      stopBlinking();
+      stopSound();
+      if (finishRedTimeout) {
+        clearTimeout(finishRedTimeout);
+        finishRedTimeout = null;
+      }
+      timerEl.style.color = "white";
+      isFinished = false;
+      playPauseBtn.style.display = "flex";
+      minutesInput.style.display = "block";
+      secondsInput.style.display = "block";
+      document.querySelector('label[for="minutesInput"]').style.display = "block";
+      document.querySelector('label[for="secondsInput"]').style.display = "block";
+      document.querySelectorAll('.inc-dec-btn').forEach(btn => btn.style.display = 'block');
+      setPlayPauseIcon(false);
+    }
+
+    function setPlayPauseIcon(isPlaying) {
+      const icon = playPauseBtn.querySelector("i");
+      if (isPlaying) {
+        icon.classList.remove("fa-play");
+        icon.classList.add("fa-pause");
+        playPauseBtn.title = "השהה";
+      } else {
+        icon.classList.remove("fa-pause");
+        icon.classList.add("fa-play");
+        playPauseBtn.title = "התחל";
+      }
+    }
+
+    function liveUpdate() {
+      let m = parseInt(minutesInput.value) || 0;
+      let s = parseInt(secondsInput.value) || 0;
+      if (m > 59) {
+        m = 59;
+        minutesInput.value = m;
+      }
+      if (s > 59) {
+        s = 59;
+        secondsInput.value = s;
+      }
+      remainingTime = m * 60 + s;
+      initialTime = 0;
+      updateDisplay();
+      stopBlinking();
+      isFinished = false;
+      playPauseBtn.style.display = "flex";
+      minutesInput.style.display = "block";
+      secondsInput.style.display = "block";
+      document.querySelector('label[for="minutesInput"]').style.display = "block";
+      document.querySelector('label[for="secondsInput"]').style.display = "block";
+      document.querySelectorAll('.inc-dec-btn').forEach(btn => btn.style.display = 'block');
+      setPlayPauseIcon(false);
+      if (isPaused) {
+        endTime = Date.now() + remainingTime * 1000;
+      }
+    }
+
+    minutesInput.addEventListener('input', liveUpdate);
+    secondsInput.addEventListener('input', liveUpdate);
+    minutesInput.addEventListener('focus', e => e.target.select());
+    secondsInput.addEventListener('focus', e => e.target.select());
+
+    document.addEventListener('selectstart', function(e) {
+      if (e.target.classList.contains('inc-dec-btn')) {
+        e.preventDefault();
+        return false;
+      }
+    });
+
+    document.addEventListener('contextmenu', function(e) {
+      if (e.target.classList.contains('inc-dec-btn')) {
+        e.preventDefault();
+        return false;
+      }
+    });
+
+    document.addEventListener('dragstart', function(e) {
+      if (e.target.classList.contains('inc-dec-btn')) {
+        e.preventDefault();
+        return false;
+      }
+    });
+
+    document.addEventListener('touchend', function(e) {
+      if (e.target.classList.contains('inc-dec-btn')) {
+        e.preventDefault();
+        return false;
+      }
+    });
+
+    let lastTouchTime = 0;
+    document.addEventListener('touchstart', function(e) {
+      if (e.target.classList.contains('inc-dec-btn')) {
+        const currentTime = new Date().getTime();
+        const tapLength = currentTime - lastTouchTime;
+        if (tapLength < 300) {
+          e.preventDefault();
+          return false;
+        }
+        lastTouchTime = currentTime;
+      }
+      if (!isPaused && interval) {
+        showControls();
+        scheduleHide();
+      }
+    });
+
+    window.addEventListener('load', () => {
+      liveUpdate();
+      setDefaultZoomLevel();
+      applyFontSize();
+    });
+
+    window.addEventListener('resize', () => {
+      isMobile = window.innerWidth <= 768;
+      setDefaultZoomLevel();
+      applyFontSize();
+    });
+
+    function setDefaultZoomLevel() {
+      if (isMobile) {
+        currentZoomLevel = 2; // קטן יותר בטלפון
+      } else {
+        currentZoomLevel = 4; // מידה אחת מתחת למקסימלי במחשב (מקס 5)
+      }
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Enter') {
+        e.preventDefault();
+        playPause();
+      }
+      if (e.key === '+' || e.key === '=') zoomIn();
+      if (e.key === '-') zoomOut();
+    });
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+        fullscreenToggle.querySelector("i").classList.remove("fa-expand");
+        fullscreenToggle.querySelector("i").classList.add("fa-compress");
+        fullscreenToggle.title = "יציאה ממסך מלא";
+      } else {
+        document.exitFullscreen();
+      }
+    }
+
+    document.addEventListener('fullscreenchange', () => {
+      if (!document.fullscreenElement) {
+        fullscreenToggle.querySelector("i").classList.remove("fa-compress");
+        fullscreenToggle.querySelector("i").classList.add("fa-expand");
+        fullscreenToggle.title = "מסך מלא";
+      }
+    });
+
+    muteBtn.addEventListener('click', toggleMute);
+    fullscreenToggle.addEventListener('click', toggleFullscreen);
+
+    document.addEventListener('mousemove', () => {
+      if (!isPaused && interval) {
+        showControls();
+        scheduleHide();
+      }
+    });
+  </script>
+</body>
+</html>
