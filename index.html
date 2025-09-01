@@ -541,7 +541,8 @@
     }
 
     function zoomIn() {
-      if (currentZoomLevel < zoomLevels.length - 1) {
+      if (currentZoomLevel208
+      < zoomLevels.length - 1) {
         currentZoomLevel++;
         applyFontSize();
       }
@@ -676,6 +677,7 @@
     }
 
     function showStopOnly() {
+      if (hideTimeout) clearTimeout(hideTimeout);
       controls.classList.remove('fade-out');
       controls.classList.add('fade-in');
       playPauseBtn.style.display = 'none';
@@ -733,7 +735,8 @@
           interval = null;
           timerEl.textContent = "00:00";
           isFinished = true;
-          showStopOnly(); // Show stop button immediately with restore icon
+          if (hideTimeout) clearTimeout(hideTimeout);
+          showStopOnly();
           startBlinking8Times();
           playSoundRepeatedly(4, 1000);
         }
@@ -839,8 +842,20 @@
 
     minutesInput.addEventListener('input', liveUpdate);
     secondsInput.addEventListener('input', liveUpdate);
-    minutesInput.addEventListener('focus', e => e.target.select());
-    secondsInput.addEventListener('focus', e => e.target.select());
+    minutesInput.addEventListener('focus', (e) => {
+      if (isTouchDevice) {
+        e.preventDefault();
+      } else {
+        e.target.select();
+      }
+    });
+    secondsInput.addEventListener('focus', (e) => {
+      if (isTouchDevice) {
+        e.preventDefault();
+      } else {
+        e.target.select();
+      }
+    });
     minutesInput.addEventListener('blur', () => {
       if (minutesInput.value === '') {
         minutesInput.value = '0';
@@ -854,7 +869,6 @@
       }
     });
 
-    // Prevent labels from focusing inputs on touch devices
     document.querySelector('label[for="minutesInput"]').addEventListener('click', (e) => {
       if (isTouchDevice) {
         e.preventDefault();
@@ -905,7 +919,7 @@
         }
         lastTouchTime = currentTime;
       }
-      if (!isPaused && interval && controls.classList.contains('fade-out')) {
+      if (!isPaused && interval && !isFinished && controls.classList.contains('fade-out')) {
         e.preventDefault();
         showControls();
         scheduleHide();
@@ -913,7 +927,7 @@
     });
 
     document.addEventListener('click', function(e) {
-      if (!isPaused && interval && controls.classList.contains('fade-out')) {
+      if (!isPaused && interval && !isFinished && controls.classList.contains('fade-out')) {
         showControls();
         scheduleHide();
       }
@@ -937,9 +951,9 @@
 
     function setDefaultZoomLevel() {
       if (isMobile) {
-        currentZoomLevel = 2; // קטן יותר בטלפון
+        currentZoomLevel = 2;
       } else {
-        currentZoomLevel = 3; // מידה אחת מתחת למקסימלי במחשב (מקס 4)
+        currentZoomLevel = 3;
       }
     }
 
@@ -993,7 +1007,7 @@
     fullscreenToggle.addEventListener('click', toggleFullscreen);
 
     document.addEventListener('mousemove', () => {
-      if (!isPaused && interval) {
+      if (!isPaused && interval && !isFinished) {
         showControls();
         scheduleHide();
       }
