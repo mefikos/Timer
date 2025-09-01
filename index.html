@@ -103,7 +103,6 @@
       transition: font-size 0.3s ease;
       text-align: center;
       font-weight: bold;
-      text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
     }
 
     .input-container {
@@ -631,7 +630,7 @@
       timerEl.textContent = formatTime(remainingTime);
     }
 
-    function startBlinking8Times() {
+    function startBlinking8Times(callback) {
       timerEl.classList.remove("blink8");
       void timerEl.offsetWidth;
       timerEl.classList.add("blink8");
@@ -639,6 +638,7 @@
       blinkingTimeout = setTimeout(() => {
         timerEl.classList.remove("blink8");
         timerEl.style.color = "red";
+        if (callback) callback();
       }, 8000);
     }
 
@@ -649,10 +649,15 @@
     }
 
     function hideControls() {
+      minutesContainer.classList.remove('fade-in');
       minutesContainer.classList.add('fade-out');
+      secondsContainer.classList.remove('fade-in');
       secondsContainer.classList.add('fade-out');
+      controls.classList.remove('fade-in');
       controls.classList.add('fade-out');
+      topControls.classList.remove('fade-in');
       topControls.classList.add('fade-out');
+      zoomControls.classList.remove('fade-in');
       zoomControls.classList.add('fade-out');
     }
 
@@ -678,7 +683,7 @@
 
     function scheduleHide() {
       if (hideTimeout) clearTimeout(hideTimeout);
-      hideTimeout = setTimeout(hideControls, 2000);
+      hideTimeout = setTimeout(hideControls, 1000);
     }
 
     function showError(msg) {
@@ -724,12 +729,8 @@
           timerEl.textContent = "00:00";
           isFinished = true;
           hideControls();
-          startBlinking8Times();
-          playSoundRepeatedly(4, 1000, () => {
-            stopBlinking();
-            timerEl.style.color = "red";
-            showStopOnly();
-          });
+          startBlinking8Times(showStopOnly);
+          playSoundRepeatedly(4, 1000);
         }
       }
     }
@@ -829,6 +830,18 @@
     secondsInput.addEventListener('input', liveUpdate);
     minutesInput.addEventListener('focus', e => e.target.select());
     secondsInput.addEventListener('focus', e => e.target.select());
+    minutesInput.addEventListener('blur', () => {
+      if (minutesInput.value === '') {
+        minutesInput.value = '0';
+        liveUpdate();
+      }
+    });
+    secondsInput.addEventListener('blur', () => {
+      if (secondsInput.value === '') {
+        secondsInput.value = '0';
+        liveUpdate();
+      }
+    });
 
     document.addEventListener('selectstart', function(e) {
       if (e.target.classList.contains('inc-dec-btn')) {
