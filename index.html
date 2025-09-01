@@ -100,9 +100,9 @@
       direction: ltr;
       color: white;
       white-space: nowrap;
+      transition: font-size 0.3s ease;
       text-align: center;
       font-weight: bold;
-      will-change: transform;
     }
 
     .input-container {
@@ -229,7 +229,7 @@
     }
 
     .blink8 {
-      animation: blink8times 1s step-start 8;
+      animation: blink8times 1s step-start 8 forwards;
       animation-fill-mode: forwards;
     }
 
@@ -633,6 +633,7 @@
 
     function startBlinking8Times(callback) {
       timerEl.classList.remove("blink8");
+      void timerEl.offsetWidth;
       timerEl.classList.add("blink8");
       if (blinkingTimeout) clearTimeout(blinkingTimeout);
       blinkingTimeout = setTimeout(() => {
