@@ -5,11 +5,14 @@
   <title>DNATimer</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300&display=swap" rel="stylesheet">
   <style>
     body {
       background-color: black;
       color: white;
-      font-family: Arial, sans-serif;
+      font-family: 'Open Sans', sans-serif;
       margin: 0;
       height: 100vh;
       display: flex;
@@ -243,7 +246,21 @@
       pointer-events: auto;
     }
 
-    @media screen and (max-width: 768px) and (orientation: portrait) {
+    #errorMsg {
+      position: fixed;
+      top: 20%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 0, 0, 0.5);
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      display: none;
+      z-index: 1001;
+      text-align: center;
+    }
+
+    @media screen and (max-width: 1024px) and (orientation: portrait) {
       body::before {
         content: "נא לסובב את המסך לתצוגה אופקית";
         position: fixed;
@@ -266,7 +283,7 @@
       }
     }
 
-    @media screen and (max-width: 768px) and (orientation: landscape) {
+    @media screen and (max-width: 1024px) and (orientation: landscape) {
       #content {
         padding: 10px;
         justify-content: center;
@@ -348,7 +365,7 @@
       }
     }
 
-    @media screen and (max-width: 768px) {
+    @media screen and (max-width: 1024px) {
       #content {
         padding: 15px;
       }
@@ -444,13 +461,14 @@
     </div>
   </div>
 
+  <div id="errorMsg"></div>
+
   <script>
     let interval = null;
     let remainingTime = 0;
     let isPaused = false;
     let endTime = null;
     let blinkingTimeout = null;
-    let finishRedTimeout = null;
     let isFinished = false;
     let currentZoomLevel = 2; // ברירת מחדל ראשונית, תשתנה בהתאם למסך
     let initialTime = 0;
@@ -474,6 +492,7 @@
     const minutesContainer = document.getElementById("minutesContainer");
     const secondsContainer = document.getElementById("secondsContainer");
     const controls = document.querySelector(".controls");
+    const errorMsg = document.getElementById("errorMsg");
 
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     const audioCtx = new AudioContext();
@@ -487,8 +506,7 @@
       { vw: 12, description: "קטן" },
       { vw: 16, description: "בינוני" },
       { vw: 22, description: "גדול" },
-      { vw: 28, description: "גדול מאוד" },
-      { vw: 35, description: "ענק" }
+      { vw: 28, description: "גדול מאוד" }
     ];
 
     function toggleMute() {
@@ -576,7 +594,7 @@
       oscillator.stop(audioCtx.currentTime + duration / 1000);
     }
 
-    function playSoundRepeatedly(times = 8, delay = 1000, callback) {
+    function playSoundRepeatedly(times = 4, delay = 1000, callback) {
       let count = 0;
       isPlayingSound = true;
       soundTimeouts = [];
@@ -634,6 +652,8 @@
       minutesContainer.classList.add('fade-out');
       secondsContainer.classList.add('fade-out');
       controls.classList.add('fade-out');
+      topControls.classList.add('fade-out');
+      zoomControls.classList.add('fade-out');
     }
 
     function showControls() {
@@ -643,6 +663,17 @@
       secondsContainer.classList.add('fade-in');
       controls.classList.remove('fade-out');
       controls.classList.add('fade-in');
+      topControls.classList.remove('fade-out');
+      topControls.classList.add('fade-in');
+      zoomControls.classList.remove('fade-out');
+      zoomControls.classList.add('fade-in');
+    }
+
+    function showStopOnly() {
+      controls.classList.remove('fade-out');
+      controls.classList.add('fade-in');
+      playPauseBtn.style.display = 'none';
+      stopBtn.style.display = 'flex';
     }
 
     function scheduleHide() {
@@ -650,18 +681,27 @@
       hideTimeout = setTimeout(hideControls, 2000);
     }
 
+    function showError(msg) {
+      errorMsg.textContent = msg;
+      errorMsg.style.display = 'block';
+      setTimeout(() => {
+        errorMsg.style.display = 'none';
+      }, 3000);
+    }
+
     function startTimer() {
+      audioCtx.resume();
       clearFinishState();
       let minutes = parseInt(minutesInput.value);
       let seconds = parseInt(secondsInput.value);
       if ((isNaN(minutes) || minutes < 0 || minutes > 59) || (isNaN(seconds) || seconds < 0 || seconds > 59)) {
-        alert("נא להזין דקות ושניות תקינות (0-59)");
+        showError("נא להזין דקות ושניות תקינות (0-59)");
         return;
       }
       remainingTime = (minutes * 60) + seconds;
       initialTime = remainingTime;
       if (remainingTime === 0) {
-        alert("יש להזין זמן גדול מ-0");
+        showError("יש להזין זמן גדול מ-0");
         return;
       }
       isPaused = false;
@@ -685,12 +725,10 @@
           isFinished = true;
           hideControls();
           startBlinking8Times();
-          playSoundRepeatedly(8, 1000, () => {
+          playSoundRepeatedly(4, 1000, () => {
             stopBlinking();
-            if (finishRedTimeout) clearTimeout(finishRedTimeout);
-            finishRedTimeout = setTimeout(() => {
-              resetAfterFinish();
-            }, 5000);
+            timerEl.style.color = "red";
+            showStopOnly();
           });
         }
       }
@@ -698,8 +736,7 @@
 
     function playPause() {
       if (isFinished) {
-        resetAfterFinish();
-        startTimer();
+        stopTimer();
         return;
       }
       if (interval === null) {
@@ -730,42 +767,15 @@
       clearFinishState();
       setPlayPauseIcon(false);
       showControls();
-    }
-
-    function resetAfterFinish() {
-      stopSound();
-      stopBlinking();
-      if (finishRedTimeout) {
-        clearTimeout(finishRedTimeout);
-        finishRedTimeout = null;
-      }
-      let m = parseInt(minutesInput.value) || 0;
-      let s = parseInt(secondsInput.value) || 0;
-      remainingTime = m * 60 + s;
-      initialTime = 0;
-      updateDisplay();
-      isFinished = false;
-      timerEl.style.color = "white";
       playPauseBtn.style.display = "flex";
-      minutesInput.style.display = "block";
-      secondsInput.style.display = "block";
-      document.querySelector('label[for="minutesInput"]').style.display = "block";
-      document.querySelector('label[for="secondsInput"]').style.display = "block";
-      document.querySelectorAll('.inc-dec-btn').forEach(btn => btn.style.display = 'block');
-      setPlayPauseIcon(false);
-      showControls();
+      stopBtn.style.display = "flex";
     }
 
     function clearFinishState() {
       stopBlinking();
       stopSound();
-      if (finishRedTimeout) {
-        clearTimeout(finishRedTimeout);
-        finishRedTimeout = null;
-      }
       timerEl.style.color = "white";
       isFinished = false;
-      playPauseBtn.style.display = "flex";
       minutesInput.style.display = "block";
       secondsInput.style.display = "block";
       document.querySelector('label[for="minutesInput"]').style.display = "block";
@@ -881,17 +891,23 @@
       if (isMobile) {
         currentZoomLevel = 2; // קטן יותר בטלפון
       } else {
-        currentZoomLevel = 4; // מידה אחת מתחת למקסימלי במחשב (מקס 5)
+        currentZoomLevel = 3; // מידה אחת מתחת למקסימלי במחשב (מקס 4)
       }
     }
 
     window.addEventListener('keydown', (e) => {
       if (e.code === 'Enter') {
         e.preventDefault();
-        playPause();
+        if (remainingTime === 0 || isFinished) {
+          stopTimer();
+        } else {
+          playPause();
+        }
       }
       if (e.key === '+' || e.key === '=') zoomIn();
       if (e.key === '-') zoomOut();
+      if (e.key === 'm' || e.key === 'M') toggleMute();
+      if (e.key === 'f' || e.key === 'F') toggleFullscreen();
     });
 
     function toggleFullscreen() {
