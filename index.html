@@ -37,7 +37,7 @@
     #topControls {
       position: absolute;
       top: 15px;
-      right: 15px;
+      right: 25px;
       display: flex;
       gap: clamp(5px, 1vw, 10px);
       z-index: 1000;
@@ -290,7 +290,7 @@
 
       #topControls {
         top: 10px;
-        right: 10px;
+        right: 20px;
         gap: 8px;
       }
 
@@ -469,7 +469,7 @@
     let endTime = null;
     let blinkingTimeout = null;
     let isFinished = false;
-    let currentZoomLevel = 2; // ברירת מחדל ראשונית, תשתנה בהתאם למסך
+    let currentZoomLevel = 2;
     let initialTime = 0;
     let hideTimeout = null;
     let isMobile = window.innerWidth <= 768;
@@ -541,8 +541,7 @@
     }
 
     function zoomIn() {
-      if (currentZoomLevel208
-      < zoomLevels.length - 1) {
+      if (currentZoomLevel < zoomLevels.length - 1) {
         currentZoomLevel++;
         applyFontSize();
       }
