@@ -235,13 +235,13 @@
 
     .fade-out {
       opacity: 0;
-      transition: opacity 0.5s ease-out;
+      transition: opacity 0.25s ease-out;
       pointer-events: none;
     }
 
     .fade-in {
       opacity: 1;
-      transition: opacity 0.5s ease-in;
+      transition: opacity 0.25s ease-in;
       pointer-events: auto;
     }
 
@@ -475,6 +475,7 @@
     let isMobile = window.innerWidth <= 768;
     let pressInterval = null;
     let pressTimeout = null;
+    let isTouchDevice = 'ontouchstart' in window;
 
     const timerEl = document.getElementById("timer");
     const timerContainer = document.getElementById("timerContainer");
@@ -683,7 +684,7 @@
 
     function scheduleHide() {
       if (hideTimeout) clearTimeout(hideTimeout);
-      hideTimeout = setTimeout(hideControls, 1000);
+      hideTimeout = setTimeout(hideControls, 500);
     }
 
     function showError(msg) {
@@ -700,13 +701,13 @@
       let minutes = parseInt(minutesInput.value);
       let seconds = parseInt(secondsInput.value);
       if ((isNaN(minutes) || minutes < 0 || minutes > 59) || (isNaN(seconds) || seconds < 0 || seconds > 59)) {
-        showError("נא להזין דקות ושניות תקינות (0-59)");
+        showError("נא להגדיר דקות ושניות תקינות (0-59)");
         return;
       }
       remainingTime = (minutes * 60) + seconds;
       initialTime = remainingTime;
       if (remainingTime === 0) {
-        showError("יש להזין זמן גדול מ-0");
+        showError("יש להגדיר זמן גדול מ-0");
         return;
       }
       isPaused = false;
@@ -715,7 +716,7 @@
       if (interval) clearInterval(interval);
       interval = setInterval(tick, 100);
       updateDisplay();
-      scheduleHide(); // הסתרה אחרי 2 שניות ראשוניות, כמו מקודם
+      scheduleHide();
     }
 
     function tick() {
@@ -747,10 +748,11 @@
           isPaused = false;
           endTime = Date.now() + remainingTime * 1000;
           setPlayPauseIcon(true);
-          scheduleHide(); // הסתרה אחרי 2 שניות כשממשיך
+          scheduleHide();
         } else {
           isPaused = true;
           setPlayPauseIcon(false);
+          if (hideTimeout) clearTimeout(hideTimeout);
           showControls();
         }
       }
@@ -767,6 +769,7 @@
       isPaused = false;
       clearFinishState();
       setPlayPauseIcon(false);
+      if (hideTimeout) clearTimeout(hideTimeout);
       showControls();
       playPauseBtn.style.display = "flex";
       stopBtn.style.display = "flex";
@@ -882,7 +885,15 @@
         }
         lastTouchTime = currentTime;
       }
-      if (!isPaused && interval) {
+      if (!isPaused && interval && controls.classList.contains('fade-out')) {
+        e.preventDefault();
+        showControls();
+        scheduleHide();
+      }
+    });
+
+    document.addEventListener('click', function(e) {
+      if (!isPaused && interval && controls.classList.contains('fade-out')) {
         showControls();
         scheduleHide();
       }
@@ -892,6 +903,10 @@
       liveUpdate();
       setDefaultZoomLevel();
       applyFontSize();
+      if (isTouchDevice) {
+        minutesInput.readOnly = true;
+        secondsInput.readOnly = true;
+      }
     });
 
     window.addEventListener('resize', () => {
@@ -924,23 +939,35 @@
     });
 
     function toggleFullscreen() {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen();
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        const elem = document.documentElement;
+        if (elem.webkitRequestFullscreen) {
+          elem.webkitRequestFullscreen();
+        } else if (elem.requestFullscreen) {
+          elem.requestFullscreen();
+        }
         fullscreenToggle.querySelector("i").classList.remove("fa-expand");
         fullscreenToggle.querySelector("i").classList.add("fa-compress");
         fullscreenToggle.title = "יציאה ממסך מלא";
       } else {
-        document.exitFullscreen();
+        if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        } else if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
       }
     }
 
-    document.addEventListener('fullscreenchange', () => {
-      if (!document.fullscreenElement) {
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+
+    function handleFullscreenChange() {
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
         fullscreenToggle.querySelector("i").classList.remove("fa-compress");
         fullscreenToggle.querySelector("i").classList.add("fa-expand");
         fullscreenToggle.title = "מסך מלא";
       }
-    });
+    }
 
     muteBtn.addEventListener('click', toggleMute);
     fullscreenToggle.addEventListener('click', toggleFullscreen);
