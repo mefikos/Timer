@@ -245,9 +245,9 @@
     }
 
     @keyframes blink4times {
-      0%, 50% { color: #E57373; }
+      0%, 50% { color: #D32F2F; }
       50.1%, 99.9% { color: black; }
-      100% { color: #E57373; }
+      100% { color: #D32F2F; }
     }
 
     .blink4 {
@@ -506,6 +506,7 @@
     let pressInterval = null;
     let pressTimeout = null;
     let isTouchDevice = 'ontouchstart' in window;
+    let oneMinuteBeepTriggered = false;
 
     const timerEl = document.getElementById("timer");
     const timerContainer = document.getElementById("timerContainer");
@@ -645,6 +646,17 @@
       playNext();
     }
 
+    function playQuickDoubleBeep() {
+      if (!isMuted) {
+        playTone(200, 1800, 'square');
+        setTimeout(() => {
+          if (!isMuted) {
+            playTone(200, 1800, 'square');
+          }
+        }, 180);
+      }
+    }
+
     function stopSound() {
       isPlayingSound = false;
       soundTimeouts.forEach(clearTimeout);
@@ -668,7 +680,7 @@
       if (blinkingTimeout) clearTimeout(blinkingTimeout);
       blinkingTimeout = setTimeout(() => {
         timerEl.classList.remove("blink4");
-        timerEl.style.color = "#E57373";
+        timerEl.style.color = "#D32F2F";
         if (callback) callback();
       }, 4000);
     }
@@ -746,6 +758,7 @@
         return;
       }
       isPaused = false;
+      oneMinuteBeepTriggered = initialTime <= 60;
       setPlayPauseIcon(true);
       endTime = Date.now() + remainingTime * 1000;
       if (interval) clearInterval(interval);
@@ -759,6 +772,10 @@
         const timeLeft = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
         remainingTime = timeLeft;
         updateDisplay();
+        if (initialTime > 60 && timeLeft <= 60 && !oneMinuteBeepTriggered) {
+          playQuickDoubleBeep();
+          oneMinuteBeepTriggered = true;
+        }
         if (timeLeft <= 0) {
           clearInterval(interval);
           interval = null;
@@ -801,6 +818,7 @@
       let s = parseInt(secondsInput.value) || 0;
       remainingTime = m * 60 + s;
       initialTime = 0;
+      oneMinuteBeepTriggered = false;
       updateDisplay();
       isPaused = false;
       clearFinishState();
@@ -820,6 +838,7 @@
       stopSound();
       timerEl.style.color = "white";
       isFinished = false;
+      oneMinuteBeepTriggered = false;
       minutesInput.style.display = "block";
       secondsInput.style.display = "block";
       document.querySelector('label[for="minutesInput"]').style.display = "block";
@@ -856,6 +875,7 @@
       }
       remainingTime = m * 60 + s;
       initialTime = 0;
+      oneMinuteBeepTriggered = false;
       updateDisplay();
       stopBlinking();
       isFinished = false;
