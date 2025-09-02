@@ -245,9 +245,9 @@
     }
 
     @keyframes blink4times {
-      0%, 50% { color: red; }
+      0%, 50% { color: #E57373; }
       50.1%, 99.9% { color: black; }
-      100% { color: red; }
+      100% { color: #E57373; }
     }
 
     .blink4 {
@@ -272,7 +272,7 @@
       top: 20%;
       left: 50%;
       transform: translate(-50%, -50%);
-      background: rgba(255, 0, 0, 0.5);
+      background: rgba(229, 115, 115, 0.5);
       color: white;
       padding: 20px;
       border-radius: 10px;
@@ -668,7 +668,7 @@
       if (blinkingTimeout) clearTimeout(blinkingTimeout);
       blinkingTimeout = setTimeout(() => {
         timerEl.classList.remove("blink4");
-        timerEl.style.color = "red";
+        timerEl.style.color = "#E57373";
         if (callback) callback();
       }, 4000);
     }
