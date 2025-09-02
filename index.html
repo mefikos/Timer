@@ -116,11 +116,11 @@
       background-color: #444;
       border: 2px solid #666;
       color: white;
-      font-size: clamp(16px, 4vw, 22px);
-      padding: 5px 10px;
+      font-size: clamp(20px, 5vw, 28px);
+      padding: 8px 16px;
       cursor: pointer;
       border-radius: 5px;
-      width: clamp(40px, 10vw, 60px);
+      width: clamp(50px, 12vw, 80px);
       text-align: center;
       user-select: none;
       -webkit-user-select: none;
@@ -131,6 +131,15 @@
 
     .inc-dec-btn:hover {
       background-color: #555;
+    }
+
+    #minutesContainer .inc-dec-btn {
+      background-color: yellow;
+      color: black;
+    }
+
+    #minutesContainer .inc-dec-btn:hover {
+      background-color: #e6e600;
     }
 
     #minutesContainer {
@@ -345,9 +354,9 @@
       }
 
       .inc-dec-btn {
-        width: 35px;
-        font-size: 14px;
-        padding: 4px 6px;
+        width: 40px;
+        font-size: 16px;
+        padding: 6px 8px;
       }
 
       label {
@@ -386,6 +395,11 @@
       
       button {
         min-width: 60px;
+      }
+
+      label {
+        border: none;
+        background: none;
       }
     }
 
@@ -440,7 +454,7 @@
       <label for="minutesInput">דקות</label>
       <div class="input-container">
         <button class="inc-dec-btn" onmousedown="startPress('minutesInput', 1)" onmouseup="stopPress()" onmouseleave="stopPress()" ontouchstart="startPress('minutesInput', 1)" ontouchend="stopPress()">+</button>
-        <input type="number" id="minutesInput" value="0" min="0" max="59" />
+        <input type="number" id="minutesInput" value="10" min="0" max="59" />
         <button class="inc-dec-btn" onmousedown="startPress('minutesInput', -1)" onmouseup="stopPress()" onmouseleave="stopPress()" ontouchstart="startPress('minutesInput', -1)" ontouchend="stopPress()">-</button>
       </div>
     </div>
