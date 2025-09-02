@@ -134,12 +134,12 @@
     }
 
     #minutesContainer .inc-dec-btn {
-      background-color: #FFD700;
+      background-color: #FFF176;
       color: black;
     }
 
     #minutesContainer .inc-dec-btn:hover {
-      background-color: #FFEB3B;
+      background-color: #FFFF8D;
     }
 
     #minutesContainer {
@@ -466,7 +466,7 @@
       <label for="minutesInput">דקות</label>
       <div class="input-container">
         <button class="inc-dec-btn" onmousedown="startPress('minutesInput', 1)" onmouseup="stopPress()" onmouseleave="stopPress()" ontouchstart="startPress('minutesInput', 1)" ontouchend="stopPress()">+</button>
-        <input type="number" id="minutesInput" value="10" min="0" max="59" />
+        <input type="number" id="minutesInput" value="5" min="0" max="59" />
         <button class="inc-dec-btn" onmousedown="startPress('minutesInput', -1)" onmouseup="stopPress()" onmouseleave="stopPress()" ontouchstart="startPress('minutesInput', -1)" ontouchend="stopPress()">-</button>
       </div>
     </div>
