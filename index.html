@@ -134,12 +134,12 @@
     }
 
     #minutesContainer .inc-dec-btn {
-      background-color: yellow;
+      background-color: #FFD700;
       color: black;
     }
 
     #minutesContainer .inc-dec-btn:hover {
-      background-color: #e6e600;
+      background-color: #FFEB3B;
     }
 
     #minutesContainer {
@@ -218,13 +218,13 @@
     }
 
     #playPauseBtn.play {
-      background-color: green;
-      border-color: #006600;
+      background-color: #4CAF50;
+      border-color: #388E3C;
     }
 
     #playPauseBtn.play:hover {
-      background-color: #006600;
-      border-color: #008800;
+      background-color: #66BB6A;
+      border-color: #4CAF50;
     }
 
     button i {
@@ -244,14 +244,14 @@
       align-self: center;
     }
 
-    @keyframes blink8times {
+    @keyframes blink4times {
       0%, 50% { color: red; }
       50.1%, 99.9% { color: black; }
       100% { color: red; }
     }
 
-    .blink8 {
-      animation: blink8times 1s step-start 8 forwards;
+    .blink4 {
+      animation: blink4times 1s step-start 4 forwards;
       animation-fill-mode: forwards;
     }
 
@@ -661,21 +661,21 @@
       timerEl.textContent = formatTime(remainingTime);
     }
 
-    function startBlinking8Times(callback) {
-      timerEl.classList.remove("blink8");
+    function startBlinking4Times(callback) {
+      timerEl.classList.remove("blink4");
       void timerEl.offsetWidth;
-      timerEl.classList.add("blink8");
+      timerEl.classList.add("blink4");
       if (blinkingTimeout) clearTimeout(blinkingTimeout);
       blinkingTimeout = setTimeout(() => {
-        timerEl.classList.remove("blink8");
+        timerEl.classList.remove("blink4");
         timerEl.style.color = "red";
         if (callback) callback();
-      }, 8000);
+      }, 4000);
     }
 
     function stopBlinking() {
       if (blinkingTimeout) clearTimeout(blinkingTimeout);
-      timerEl.classList.remove("blink8");
+      timerEl.classList.remove("blink4");
       timerEl.style.visibility = 'visible';
     }
 
@@ -766,7 +766,7 @@
           isFinished = true;
           if (hideTimeout) clearTimeout(hideTimeout);
           showStopOnly();
-          startBlinking8Times();
+          startBlinking4Times();
           playSoundRepeatedly(4, 1000);
         }
       }
