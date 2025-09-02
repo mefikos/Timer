@@ -217,6 +217,16 @@
       border-color: #777;
     }
 
+    #playPauseBtn.play {
+      background-color: green;
+      border-color: #006600;
+    }
+
+    #playPauseBtn.play:hover {
+      background-color: #006600;
+      border-color: #008800;
+    }
+
     button i {
       font-size: 1.2em;
       color: white;
@@ -363,6 +373,8 @@
         font-size: 12px;
         padding: 3px;
         width: 35px;
+        border: none;
+        background: none;
       }
 
       #fullscreenToggle, #muteBtn {
@@ -473,7 +485,7 @@
     </div>
 
     <div class="controls">
-      <button id="playPauseBtn" onclick="playPause()" title="התחל"><i class="fas fa-play"></i></button>
+      <button id="playPauseBtn" class="play" onclick="playPause()" title="התחל"><i class="fas fa-play"></i></button>
       <button id="stopBtn" onclick="stopTimer()" title="עצור"><i class="fas fa-stop"></i></button>
     </div>
   </div>
@@ -821,10 +833,12 @@
       if (isPlaying) {
         icon.classList.remove("fa-play");
         icon.classList.add("fa-pause");
+        playPauseBtn.classList.remove("play");
         playPauseBtn.title = "השהה";
       } else {
         icon.classList.remove("fa-pause");
         icon.classList.add("fa-play");
+        playPauseBtn.classList.add("play");
         playPauseBtn.title = "התחל";
       }
     }
