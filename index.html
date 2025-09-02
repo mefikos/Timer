@@ -155,7 +155,7 @@
       z-index: 10;
     }
 
-    select {
+    #minutesInput {
       font-size: clamp(16px, 4vw, 24px);
       padding: clamp(8px, 2vw, 12px) clamp(12px, 3vw, 20px);
       width: clamp(80px, 18vw, 100px);
@@ -166,15 +166,42 @@
       border-radius: 8px;
       box-sizing: border-box;
       transition: border-color 0.3s, background-color 0.3s;
-      -webkit-appearance: none;
-      -moz-appearance: none;
-      appearance: none;
+      cursor: pointer;
     }
 
-    select:focus {
+    #minutesInput:hover {
+      background-color: #444;
+    }
+
+    #minutesInput:focus {
       outline: none;
       border-color: #777;
       background-color: #444;
+    }
+
+    .dropdown-menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      width: 100%;
+      max-height: 200px;
+      overflow-y: auto;
+      background-color: #333;
+      border: 2px solid #555;
+      border-radius: 8px;
+      z-index: 100;
+      display: none;
+    }
+
+    .dropdown-item {
+      padding: 8px;
+      text-align: center;
+      color: white;
+      cursor: pointer;
+    }
+
+    .dropdown-item:hover {
+      background-color: #555;
     }
 
     button {
@@ -312,7 +339,7 @@
         gap: 15px;
       }
       
-      select {
+      #minutesInput {
         width: 60px;
         font-size: 14px;
         padding: 6px 8px;
@@ -360,7 +387,7 @@
         gap: 15px;
       }
       
-      select {
+      #minutesInput {
         width: 95px;
       }
       
@@ -374,7 +401,7 @@
         padding: 10px;
       }
       
-      select {
+      #minutesInput {
         width: 85px;
       }
       
@@ -385,7 +412,7 @@
     }
 
     @media screen and (min-width: 1200px) {
-      select {
+      #minutesInput {
         font-size: 20px;
         padding: 10px 16px;
         width: 95px;
@@ -419,7 +446,8 @@
       <label for="minutesInput">דקות</label>
       <div class="input-container">
         <button class="inc-dec-btn" onmousedown="startPress('minutesInput', 1)" onmouseup="stopPress()" onmouseleave="stopPress()" ontouchstart="startPress('minutesInput', 1)" ontouchend="stopPress()">+</button>
-        <select id="minutesInput"></select>
+        <div id="minutesInput">0</div>
+        <div id="minutesDropdown" class="dropdown-menu"></div>
         <button class="inc-dec-btn" onmousedown="startPress('minutesInput', -1)" onmouseup="stopPress()" onmouseleave="stopPress()" ontouchstart="startPress('minutesInput', -1)" ontouchend="stopPress()">-</button>
       </div>
     </div>
@@ -454,6 +482,7 @@
     const timerEl = document.getElementById("timer");
     const timerContainer = document.getElementById("timerContainer");
     const minutesInput = document.getElementById("minutesInput");
+    const minutesDropdown = document.getElementById("minutesDropdown");
     const playPauseBtn = document.getElementById("playPauseBtn");
     const stopBtn = document.getElementById("stopBtn");
     const zoomInBtn = document.getElementById("zoomInBtn");
@@ -482,14 +511,35 @@
     ];
 
     function populateMinutes() {
+      minutesDropdown.innerHTML = '';
       for (let i = 0; i <= 60; i++) {
-        let option = document.createElement('option');
-        option.value = i;
-        option.textContent = i;
-        minutesInput.appendChild(option);
+        let item = document.createElement('div');
+        item.className = 'dropdown-item';
+        item.textContent = i;
+        item.addEventListener('click', () => {
+          minutesInput.textContent = i;
+          minutesDropdown.style.display = 'none';
+          liveUpdate();
+        });
+        minutesDropdown.appendChild(item);
       }
-      minutesInput.value = 0;
+      minutesInput.textContent = '0';
     }
+
+    function toggleDropdown() {
+      minutesDropdown.style.display = minutesDropdown.style.display === 'block' ? 'none' : 'block';
+    }
+
+    minutesInput.addEventListener('click', (e) => {
+      e.preventDefault();
+      toggleDropdown();
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!minutesContainer.contains(e.target) && minutesDropdown.style.display === 'block') {
+        minutesDropdown.style.display = 'none';
+      }
+    });
 
     function toggleMute() {
       isMuted = !isMuted;
@@ -556,9 +606,9 @@
     }
 
     function increment(input, delta) {
-      let value = parseInt(input.value) || 0;
+      let value = parseInt(input.textContent) || 0;
       value = Math.max(0, Math.min(60, value + delta));
-      input.value = value;
+      input.textContent = value;
       liveUpdate();
     }
 
@@ -640,6 +690,7 @@
       topControls.classList.add('fade-out');
       zoomControls.classList.remove('fade-in');
       zoomControls.classList.add('fade-out');
+      minutesDropdown.style.display = 'none';
     }
 
     function showControls() {
@@ -681,7 +732,7 @@
     function startTimer() {
       audioCtx.resume();
       clearFinishState();
-      let minutes = parseInt(minutesInput.value);
+      let minutes = parseInt(minutesInput.textContent);
       if (isNaN(minutes) || minutes < 0 || minutes > 60) {
         showError("נא להגדיר דקות תקינות (0-60)");
         return;
@@ -744,7 +795,7 @@
     function stopTimer() {
       clearInterval(interval);
       interval = null;
-      let m = parseInt(minutesInput.value) || 0;
+      let m = parseInt(minutesInput.textContent) || 0;
       remainingTime = m * 60;
       initialTime = 0;
       updateDisplay();
@@ -786,14 +837,14 @@
     }
 
     function liveUpdate() {
-      let m = parseInt(minutesInput.value) || 0;
+      let m = parseInt(minutesInput.textContent) || 0;
       if (m > 60) {
         m = 60;
-        minutesInput.value = m;
+        minutesInput.textContent = m;
       }
       if (m < 0) {
         m = 0;
-        minutesInput.value = m;
+        minutesInput.textContent = m;
       }
       remainingTime = m * 60;
       initialTime = 0;
@@ -810,11 +861,10 @@
       }
     }
 
-    minutesInput.addEventListener('change', liveUpdate);
-
     document.querySelector('label[for="minutesInput"]').addEventListener('click', (e) => {
       if (isTouchDevice) {
         e.preventDefault();
+        toggleDropdown();
       }
     });
 
