@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Timer DNA</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -94,7 +94,6 @@
       position: relative;
       display: inline-block;
       margin: clamp(20px, 8vh, 60px) 0;
-      z-index: 1;
     }
 
     #timer {
@@ -108,6 +107,7 @@
 
     .input-container {
       display: flex;
+      flex-direction: column;
       align-items: center;
       gap: 5px;
     }
@@ -135,14 +135,22 @@
 
     #minutesContainer {
       position: absolute;
-      top: 10px;
-      left: 50%;
-      transform: translateX(-50%);
+      top: 50%;
+      left: 10px;
+      transform: translateY(-50%);
       display: flex;
-      flex-direction: column;
       align-items: center;
       gap: clamp(8px, 2vw, 15px);
-      z-index: 10;
+    }
+
+    #secondsContainer {
+      position: absolute;
+      top: 50%;
+      right: 10px;
+      transform: translateY(-50%);
+      display: flex;
+      align-items: center;
+      gap: clamp(8px, 2vw, 15px);
     }
 
     .controls {
@@ -152,10 +160,9 @@
       gap: clamp(10px, 3vw, 20px);
       justify-content: center;
       flex-wrap: wrap;
-      z-index: 10;
     }
 
-    #minutesInput {
+    input {
       font-size: clamp(16px, 4vw, 24px);
       padding: clamp(8px, 2vw, 12px) clamp(12px, 3vw, 20px);
       width: clamp(80px, 18vw, 100px);
@@ -166,42 +173,14 @@
       border-radius: 8px;
       box-sizing: border-box;
       transition: border-color 0.3s, background-color 0.3s;
-      cursor: pointer;
+      -webkit-appearance: none;
+      -moz-appearance: textfield;
     }
 
-    #minutesInput:hover {
-      background-color: #444;
-    }
-
-    #minutesInput:focus {
+    input:focus {
       outline: none;
       border-color: #777;
       background-color: #444;
-    }
-
-    .dropdown-menu {
-      position: absolute;
-      top: 100%;
-      left: 0;
-      width: 100%;
-      max-height: 200px;
-      overflow-y: auto;
-      background-color: #333;
-      border: 2px solid #555;
-      border-radius: 8px;
-      z-index: 100;
-      display: none;
-    }
-
-    .dropdown-item {
-      padding: 8px;
-      text-align: center;
-      color: white;
-      cursor: pointer;
-    }
-
-    .dropdown-item:hover {
-      background-color: #555;
     }
 
     button {
@@ -235,12 +214,22 @@
     label {
       font-size: clamp(14px, 3.5vw, 20px);
       font-weight: bold;
-      min-width: clamp(40px, 12vw, 60px);
       text-align: center;
       border: 1px solid gray;
       padding: 5px;
       border-radius: 5px;
       background-color: rgba(128, 128, 128, 0.2);
+      position: absolute;
+      top: -40px;
+      transform: translateY(-100%);
+    }
+
+    #minutesLabel {
+      left: 0;
+    }
+
+    #secondsLabel {
+      right: 0;
     }
 
     @keyframes blink8times {
@@ -322,7 +311,18 @@
       }
 
       #minutesContainer {
-        top: 5px;
+        position: absolute;
+        top: 50%;
+        left: 10px;
+        transform: translateY(-50%);
+        gap: 8px;
+      }
+
+      #secondsContainer {
+        position: absolute;
+        top: 50%;
+        right: 10px;
+        transform: translateY(-50%);
         gap: 8px;
       }
 
@@ -339,7 +339,7 @@
         gap: 15px;
       }
       
-      #minutesInput {
+      input {
         width: 60px;
         font-size: 14px;
         padding: 6px 8px;
@@ -360,7 +360,7 @@
       label {
         font-size: 12px;
         padding: 3px;
-        min-width: 35px;
+        top: -30px;
       }
 
       #fullscreenToggle, #muteBtn {
@@ -379,7 +379,7 @@
         padding: 15px;
       }
       
-      #minutesContainer {
+      #minutesContainer, #secondsContainer {
         gap: 10px;
       }
       
@@ -387,7 +387,7 @@
         gap: 15px;
       }
       
-      #minutesInput {
+      input {
         width: 95px;
       }
       
@@ -401,7 +401,7 @@
         padding: 10px;
       }
       
-      #minutesInput {
+      input {
         width: 85px;
       }
       
@@ -412,7 +412,7 @@
     }
 
     @media screen and (min-width: 1200px) {
-      #minutesInput {
+      input {
         font-size: 20px;
         padding: 10px 16px;
         width: 95px;
@@ -443,12 +443,20 @@
     </div>
 
     <div id="minutesContainer">
-      <label for="minutesInput">דקות</label>
+      <label id="minutesLabel" for="minutesInput">דקות</label>
       <div class="input-container">
         <button class="inc-dec-btn" onmousedown="startPress('minutesInput', 1)" onmouseup="stopPress()" onmouseleave="stopPress()" ontouchstart="startPress('minutesInput', 1)" ontouchend="stopPress()">+</button>
-        <div id="minutesInput">0</div>
-        <div id="minutesDropdown" class="dropdown-menu"></div>
+        <input type="number" id="minutesInput" value="0" min="0" max="59" />
         <button class="inc-dec-btn" onmousedown="startPress('minutesInput', -1)" onmouseup="stopPress()" onmouseleave="stopPress()" ontouchstart="startPress('minutesInput', -1)" ontouchend="stopPress()">-</button>
+      </div>
+    </div>
+
+    <div id="secondsContainer">
+      <label id="secondsLabel" for="secondsInput">שניות</label>
+      <div class="input-container">
+        <button class="inc-dec-btn" onmousedown="startPress('secondsInput', 1)" onmouseup="stopPress()" onmouseleave="stopPress()" ontouchstart="startPress('secondsInput', 1)" ontouchend="stopPress()">+</button>
+        <input type="number" id="secondsInput" value="0" min="0" max="59" />
+        <button class="inc-dec-btn" onmousedown="startPress('secondsInput', -1)" onmouseup="stopPress()" onmouseleave="stopPress()" ontouchstart="startPress('secondsInput', -1)" ontouchend="stopPress()">-</button>
       </div>
     </div>
 
@@ -482,7 +490,7 @@
     const timerEl = document.getElementById("timer");
     const timerContainer = document.getElementById("timerContainer");
     const minutesInput = document.getElementById("minutesInput");
-    const minutesDropdown = document.getElementById("minutesDropdown");
+    const secondsInput = document.getElementById("secondsInput");
     const playPauseBtn = document.getElementById("playPauseBtn");
     const stopBtn = document.getElementById("stopBtn");
     const zoomInBtn = document.getElementById("zoomInBtn");
@@ -492,6 +500,7 @@
     const topControls = document.getElementById("topControls");
     const zoomControls = document.getElementById("zoomControls");
     const minutesContainer = document.getElementById("minutesContainer");
+    const secondsContainer = document.getElementById("secondsContainer");
     const controls = document.querySelector(".controls");
     const errorMsg = document.getElementById("errorMsg");
 
@@ -509,37 +518,6 @@
       { vw: 22, description: "גדול" },
       { vw: 28, description: "גדול מאוד" }
     ];
-
-    function populateMinutes() {
-      minutesDropdown.innerHTML = '';
-      for (let i = 0; i <= 60; i++) {
-        let item = document.createElement('div');
-        item.className = 'dropdown-item';
-        item.textContent = i;
-        item.addEventListener('click', () => {
-          minutesInput.textContent = i;
-          minutesDropdown.style.display = 'none';
-          liveUpdate();
-        });
-        minutesDropdown.appendChild(item);
-      }
-      minutesInput.textContent = '0';
-    }
-
-    function toggleDropdown() {
-      minutesDropdown.style.display = minutesDropdown.style.display === 'block' ? 'none' : 'block';
-    }
-
-    minutesInput.addEventListener('click', (e) => {
-      e.preventDefault();
-      toggleDropdown();
-    });
-
-    document.addEventListener('click', (e) => {
-      if (!minutesContainer.contains(e.target) && minutesDropdown.style.display === 'block') {
-        minutesDropdown.style.display = 'none';
-      }
-    });
 
     function toggleMute() {
       isMuted = !isMuted;
@@ -606,9 +584,9 @@
     }
 
     function increment(input, delta) {
-      let value = parseInt(input.textContent) || 0;
-      value = Math.max(0, Math.min(60, value + delta));
-      input.textContent = value;
+      let value = parseInt(input.value) || 0;
+      value = Math.max(0, Math.min(59, value + delta));
+      input.value = value;
       liveUpdate();
     }
 
@@ -684,18 +662,21 @@
     function hideControls() {
       minutesContainer.classList.remove('fade-in');
       minutesContainer.classList.add('fade-out');
+      secondsContainer.classList.remove('fade-in');
+      secondsContainer.classList.add('fade-out');
       controls.classList.remove('fade-in');
       controls.classList.add('fade-out');
       topControls.classList.remove('fade-in');
       topControls.classList.add('fade-out');
       zoomControls.classList.remove('fade-in');
       zoomControls.classList.add('fade-out');
-      minutesDropdown.style.display = 'none';
     }
 
     function showControls() {
       minutesContainer.classList.remove('fade-out');
       minutesContainer.classList.add('fade-in');
+      secondsContainer.classList.remove('fade-out');
+      secondsContainer.classList.add('fade-in');
       controls.classList.remove('fade-out');
       controls.classList.add('fade-in');
       topControls.classList.remove('fade-out');
@@ -732,12 +713,13 @@
     function startTimer() {
       audioCtx.resume();
       clearFinishState();
-      let minutes = parseInt(minutesInput.textContent);
-      if (isNaN(minutes) || minutes < 0 || minutes > 60) {
-        showError("נא להגדיר דקות תקינות (0-60)");
+      let minutes = parseInt(minutesInput.value);
+      let seconds = parseInt(secondsInput.value);
+      if ((isNaN(minutes) || minutes < 0 || minutes > 59) || (isNaN(seconds) || seconds < 0 || seconds > 59)) {
+        showError("נא להגדיר דקות ושניות תקינות (0-59)");
         return;
       }
-      remainingTime = minutes * 60;
+      remainingTime = (minutes * 60) + seconds;
       initialTime = remainingTime;
       if (remainingTime === 0) {
         showError("יש להגדיר זמן גדול מ-0");
@@ -795,8 +777,9 @@
     function stopTimer() {
       clearInterval(interval);
       interval = null;
-      let m = parseInt(minutesInput.textContent) || 0;
-      remainingTime = m * 60;
+      let m = parseInt(minutesInput.value) || 0;
+      let s = parseInt(secondsInput.value) || 0;
+      remainingTime = m * 60 + s;
       initialTime = 0;
       updateDisplay();
       isPaused = false;
@@ -818,7 +801,9 @@
       timerEl.style.color = "white";
       isFinished = false;
       minutesInput.style.display = "block";
+      secondsInput.style.display = "block";
       document.querySelector('label[for="minutesInput"]').style.display = "block";
+      document.querySelector('label[for="secondsInput"]').style.display = "block";
       document.querySelectorAll('.inc-dec-btn').forEach(btn => btn.style.display = 'block');
       setPlayPauseIcon(false);
     }
@@ -837,23 +822,26 @@
     }
 
     function liveUpdate() {
-      let m = parseInt(minutesInput.textContent) || 0;
-      if (m > 60) {
-        m = 60;
-        minutesInput.textContent = m;
+      let m = parseInt(minutesInput.value) || 0;
+      let s = parseInt(secondsInput.value) || 0;
+      if (m > 59) {
+        m = 59;
+        minutesInput.value = m;
       }
-      if (m < 0) {
-        m = 0;
-        minutesInput.textContent = m;
+      if (s > 59) {
+        s = 59;
+        secondsInput.value = s;
       }
-      remainingTime = m * 60;
+      remainingTime = m * 60 + s;
       initialTime = 0;
       updateDisplay();
       stopBlinking();
       isFinished = false;
       playPauseBtn.style.display = "flex";
       minutesInput.style.display = "block";
+      secondsInput.style.display = "block";
       document.querySelector('label[for="minutesInput"]').style.display = "block";
+      document.querySelector('label[for="secondsInput"]').style.display = "block";
       document.querySelectorAll('.inc-dec-btn').forEach(btn => btn.style.display = 'block');
       setPlayPauseIcon(false);
       if (isPaused) {
@@ -861,10 +849,43 @@
       }
     }
 
+    minutesInput.addEventListener('input', liveUpdate);
+    secondsInput.addEventListener('input', liveUpdate);
+    minutesInput.addEventListener('focus', (e) => {
+      if (isTouchDevice) {
+        e.preventDefault();
+      } else {
+        e.target.select();
+      }
+    });
+    secondsInput.addEventListener('focus', (e) => {
+      if (isTouchDevice) {
+        e.preventDefault();
+      } else {
+        e.target.select();
+      }
+    });
+    minutesInput.addEventListener('blur', () => {
+      if (minutesInput.value === '') {
+        minutesInput.value = '0';
+        liveUpdate();
+      }
+    });
+    secondsInput.addEventListener('blur', () => {
+      if (secondsInput.value === '') {
+        secondsInput.value = '0';
+        liveUpdate();
+      }
+    });
+
     document.querySelector('label[for="minutesInput"]').addEventListener('click', (e) => {
       if (isTouchDevice) {
         e.preventDefault();
-        toggleDropdown();
+      }
+    });
+    document.querySelector('label[for="secondsInput"]').addEventListener('click', (e) => {
+      if (isTouchDevice) {
+        e.preventDefault();
       }
     });
 
@@ -922,10 +943,13 @@
     });
 
     window.addEventListener('load', () => {
-      populateMinutes();
       liveUpdate();
       setDefaultZoomLevel();
       applyFontSize();
+      if (isTouchDevice) {
+        minutesInput.readOnly = true;
+        secondsInput.readOnly = true;
+      }
     });
 
     window.addEventListener('resize', () => {
