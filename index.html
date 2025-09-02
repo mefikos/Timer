@@ -106,12 +106,6 @@
       font-weight: bold;
     }
 
-    #timePickerContainer {
-      display: flex;
-      align-items: center;
-      gap: clamp(8px, 2vw, 15px);
-    }
-
     select {
       font-size: clamp(16px, 4vw, 24px);
       padding: clamp(8px, 2vw, 12px) clamp(12px, 3vw, 20px);
@@ -334,18 +328,58 @@
         min-width: 65px;
       }
     }
+
+    #timePickers {
+      position: absolute;
+      top: 15px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: row;
+      gap: clamp(20px, 5vw, 40px);
+      z-index: 1000;
+      align-items: center;
+    }
+
+    .picker-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .picker-label {
+      font-size: clamp(16px, 3vw, 20px);
+      margin-bottom: clamp(5px, 1vw, 8px);
+      color: white;
+    }
   </style>
 </head>
 <body>
   <div id="content">
     <div id="topControls">
-      <div id="timePickerContainer">
-        <select id="timePicker" onchange="liveUpdate()">
+      <div id="fullscreenToggle" title="מסך מלא"><i class="fas fa-expand"></i></div>
+      <div id="muteBtn" title="הצליל פעיל"><i class="fas fa-volume-up"></i></div>
+    </div>
+
+    <div id="timePickers">
+      <div class="picker-container">
+        <div class="picker-label">שעות</div>
+        <select id="hoursPicker" onchange="liveUpdate()">
           <!-- Options will be populated by JavaScript -->
         </select>
       </div>
-      <div id="fullscreenToggle" title="מסך מלא"><i class="fas fa-expand"></i></div>
-      <div id="muteBtn" title="הצליל פעיל"><i class="fas fa-volume-up"></i></div>
+      <div class="picker-container">
+        <div class="picker-label">דקות</div>
+        <select id="minutesPicker" onchange="liveUpdate()">
+          <!-- Options will be populated by JavaScript -->
+        </select>
+      </div>
+      <div class="picker-container">
+        <div class="picker-label">שניות</div>
+        <select id="secondsPicker" onchange="liveUpdate()">
+          <!-- Options will be populated by JavaScript -->
+        </select>
+      </div>
     </div>
 
     <div id="zoomControls">
@@ -380,7 +414,9 @@
 
     const timerEl = document.getElementById("timer");
     const timerContainer = document.getElementById("timerContainer");
-    const timePicker = document.getElementById("timePicker");
+    const hoursPicker = document.getElementById("hoursPicker");
+    const minutesPicker = document.getElementById("minutesPicker");
+    const secondsPicker = document.getElementById("secondsPicker");
     const playPauseBtn = document.getElementById("playPauseBtn");
     const stopBtn = document.getElementById("stopBtn");
     const zoomInBtn = document.getElementById("zoomInBtn");
@@ -389,8 +425,8 @@
     const fullscreenToggle = document.getElementById("fullscreenToggle");
     const topControls = document.getElementById("topControls");
     const zoomControls = document.getElementById("zoomControls");
-    const timePickerContainer = document.getElementById("timePickerContainer");
     const controls = document.querySelector(".controls");
+    const timePickers = document.getElementById("timePickers");
     const errorMsg = document.getElementById("errorMsg");
 
     const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -408,15 +444,32 @@
       { vw: 28, description: "גדול מאוד" }
     ];
 
-    // Populate the time picker with options from 00:00 to 60:00
-    function populateTimePicker() {
-      for (let minutes = 0; minutes <= 60; minutes++) {
+    // Populate the time pickers
+    function populatePickers() {
+      // Hours picker (0 to 10)
+      for (let hours = 0; hours <= 10; hours++) {
         const option = document.createElement("option");
-        option.value = minutes * 60;
-        option.textContent = formatTime(minutes * 60);
-        timePicker.appendChild(option);
+        option.value = hours;
+        option.textContent = String(hours).padStart(2, '0');
+        hoursPicker.appendChild(option);
       }
-      timePicker.value = 0;
+      // Minutes picker (0 to 59)
+      for (let minutes = 0; minutes <= 59; minutes++) {
+        const option = document.createElement("option");
+        option.value = minutes;
+        option.textContent = String(minutes).padStart(2, '0');
+        minutesPicker.appendChild(option);
+      }
+      // Seconds picker (0 to 59)
+      for (let seconds = 0; seconds < 60; seconds++) {
+        const option = document.createElement("option");
+        option.value = seconds;
+        option.textContent = String(seconds).padStart(2, '0');
+        secondsPicker.appendChild(option);
+      }
+      hoursPicker.value = 0;
+      minutesPicker.value = 0;
+      secondsPicker.value = 0;
     }
 
     function toggleMute() {
@@ -506,9 +559,13 @@
     }
 
     function formatTime(seconds) {
-      const m = Math.floor(seconds / 60);
-      const s = seconds % 60;
-      return String(m).padStart(2, '0') + ":" + String(s).padStart(2, '0');
+      const hours = Math.floor(seconds / 3600);
+      const minutes = Math.floor((seconds % 3600) / 60);
+      const secs = seconds % 60;
+      if (hours > 0) {
+        return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      }
+      return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
     }
 
     function updateDisplay() {
@@ -540,6 +597,8 @@
       controls.classList.add('fade-out');
       zoomControls.classList.remove('fade-in');
       zoomControls.classList.add('fade-out');
+      timePickers.classList.remove('fade-in');
+      timePickers.classList.add('fade-out');
     }
 
     function showControls() {
@@ -549,12 +608,16 @@
       controls.classList.add('fade-in');
       zoomControls.classList.remove('fade-out');
       zoomControls.classList.add('fade-in');
+      timePickers.classList.remove('fade-out');
+      timePickers.classList.add('fade-in');
     }
 
     function showStopOnly() {
       if (hideTimeout) clearTimeout(hideTimeout);
       controls.classList.remove('fade-out');
       controls.classList.add('fade-in');
+      timePickers.classList.remove('fade-out');
+      timePickers.classList.add('fade-in');
       playPauseBtn.style.display = 'none';
       stopBtn.style.display = 'flex';
       const stopIcon = stopBtn.querySelector("i");
@@ -579,7 +642,7 @@
     function startTimer() {
       audioCtx.resume();
       clearFinishState();
-      remainingTime = parseInt(timePicker.value);
+      remainingTime = parseInt(hoursPicker.value) * 3600 + parseInt(minutesPicker.value) * 60 + parseInt(secondsPicker.value);
       initialTime = remainingTime;
       if (remainingTime === 0) {
         showError("יש להגדיר זמן גדול מ-0");
@@ -602,7 +665,7 @@
         if (timeLeft <= 0) {
           clearInterval(interval);
           interval = null;
-          timerEl.textContent = "00:00";
+          timerEl.textContent = parseInt(hoursPicker.value) > 0 ? "00:00:00" : "00:00";
           isFinished = true;
           if (hideTimeout) clearTimeout(hideTimeout);
           showStopOnly();
@@ -637,7 +700,7 @@
     function stopTimer() {
       clearInterval(interval);
       interval = null;
-      remainingTime = parseInt(timePicker.value);
+      remainingTime = parseInt(hoursPicker.value) * 3600 + parseInt(minutesPicker.value) * 60 + parseInt(secondsPicker.value);
       initialTime = 0;
       updateDisplay();
       isPaused = false;
@@ -658,7 +721,6 @@
       stopSound();
       timerEl.style.color = "white";
       isFinished = false;
-      timePicker.style.display = "block";
       setPlayPauseIcon(false);
     }
 
@@ -676,25 +738,35 @@
     }
 
     function liveUpdate() {
-      remainingTime = parseInt(timePicker.value);
+      remainingTime = parseInt(hoursPicker.value) * 3600 + parseInt(minutesPicker.value) * 60 + parseInt(secondsPicker.value);
       initialTime = 0;
       updateDisplay();
       stopBlinking();
       isFinished = false;
       playPauseBtn.style.display = "flex";
-      timePicker.style.display = "block";
       setPlayPauseIcon(false);
       if (isPaused) {
         endTime = Date.now() + remainingTime * 1000;
       }
     }
 
-    timePicker.addEventListener('change', liveUpdate);
-    timePicker.addEventListener('click', (e) => {
-      e.stopPropagation(); // Prevent click from bubbling to document
+    hoursPicker.addEventListener('click', (e) => {
+      e.stopPropagation();
     });
-    timePicker.addEventListener('touchstart', (e) => {
-      e.stopPropagation(); // Prevent touch from bubbling to document
+    hoursPicker.addEventListener('touchstart', (e) => {
+      e.stopPropagation();
+    });
+    minutesPicker.addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
+    minutesPicker.addEventListener('touchstart', (e) => {
+      e.stopPropagation();
+    });
+    secondsPicker.addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
+    secondsPicker.addEventListener('touchstart', (e) => {
+      e.stopPropagation();
     });
 
     document.addEventListener('click', function(e) {
@@ -712,7 +784,7 @@
     });
 
     window.addEventListener('load', () => {
-      populateTimePicker();
+      populatePickers();
       liveUpdate();
       setDefaultZoomLevel();
       applyFontSize();
