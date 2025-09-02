@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Timer DNA</title>
-  <meta name="viewport" content="width=device-device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -139,6 +139,7 @@
       left: 10px;
       transform: translateY(-50%);
       display: flex;
+      flex-direction: column;
       align-items: center;
       gap: clamp(8px, 2vw, 15px);
     }
@@ -149,6 +150,7 @@
       right: 10px;
       transform: translateY(-50%);
       display: flex;
+      flex-direction: column;
       align-items: center;
       gap: clamp(8px, 2vw, 15px);
     }
@@ -219,17 +221,8 @@
       padding: 5px;
       border-radius: 5px;
       background-color: rgba(128, 128, 128, 0.2);
-      position: absolute;
-      top: -40px;
-      transform: translateY(-100%);
-    }
-
-    #minutesLabel {
-      left: 0;
-    }
-
-    #secondsLabel {
-      right: 0;
+      width: clamp(40px, 10vw, 60px);
+      align-self: center;
     }
 
     @keyframes blink8times {
@@ -360,7 +353,7 @@
       label {
         font-size: 12px;
         padding: 3px;
-        top: -30px;
+        width: 35px;
       }
 
       #fullscreenToggle, #muteBtn {
@@ -426,6 +419,7 @@
       
       label {
         font-size: 18px;
+        width: 65px;
       }
     }
   </style>
@@ -443,7 +437,7 @@
     </div>
 
     <div id="minutesContainer">
-      <label id="minutesLabel" for="minutesInput">דקות</label>
+      <label for="minutesInput">דקות</label>
       <div class="input-container">
         <button class="inc-dec-btn" onmousedown="startPress('minutesInput', 1)" onmouseup="stopPress()" onmouseleave="stopPress()" ontouchstart="startPress('minutesInput', 1)" ontouchend="stopPress()">+</button>
         <input type="number" id="minutesInput" value="0" min="0" max="59" />
@@ -452,7 +446,7 @@
     </div>
 
     <div id="secondsContainer">
-      <label id="secondsLabel" for="secondsInput">שניות</label>
+      <label for="secondsInput">שניות</label>
       <div class="input-container">
         <button class="inc-dec-btn" onmousedown="startPress('secondsInput', 1)" onmouseup="stopPress()" onmouseleave="stopPress()" ontouchstart="startPress('secondsInput', 1)" ontouchend="stopPress()">+</button>
         <input type="number" id="secondsInput" value="0" min="0" max="59" />
