@@ -133,15 +133,6 @@
       background-color: #555;
     }
 
-    #minutesContainer .inc-dec-btn {
-      background-color: #FFF176;
-      color: black;
-    }
-
-    #minutesContainer .inc-dec-btn:hover {
-      background-color: #FFFF8D;
-    }
-
     #minutesContainer {
       position: absolute;
       top: 50%;
@@ -217,16 +208,6 @@
       border-color: #777;
     }
 
-    #playPauseBtn.play {
-      background-color: #4CAF50;
-      border-color: #388E3C;
-    }
-
-    #playPauseBtn.play:hover {
-      background-color: #66BB6A;
-      border-color: #4CAF50;
-    }
-
     button i {
       font-size: 1.2em;
       color: white;
@@ -247,7 +228,7 @@
     @keyframes blink4times {
       0%, 50% { color: #D32F2F; }
       50.1%, 99.9% { color: black; }
-      100% { color: #D32F2F; }
+      100% { color: white; }
     }
 
     .blink4 {
@@ -485,7 +466,7 @@
     </div>
 
     <div class="controls">
-      <button id="playPauseBtn" class="play" onclick="playPause()" title="התחל"><i class="fas fa-play"></i></button>
+      <button id="playPauseBtn" onclick="playPause()" title="התחל"><i class="fas fa-play"></i></button>
       <button id="stopBtn" onclick="stopTimer()" title="עצור"><i class="fas fa-stop"></i></button>
     </div>
   </div>
@@ -680,7 +661,7 @@
       if (blinkingTimeout) clearTimeout(blinkingTimeout);
       blinkingTimeout = setTimeout(() => {
         timerEl.classList.remove("blink4");
-        timerEl.style.color = "#D32F2F";
+        timerEl.style.color = "white";
         if (callback) callback();
       }, 4000);
     }
@@ -852,12 +833,10 @@
       if (isPlaying) {
         icon.classList.remove("fa-play");
         icon.classList.add("fa-pause");
-        playPauseBtn.classList.remove("play");
         playPauseBtn.title = "השהה";
       } else {
         icon.classList.remove("fa-pause");
         icon.classList.add("fa-play");
-        playPauseBtn.classList.add("play");
         playPauseBtn.title = "התחל";
       }
     }
