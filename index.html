@@ -226,7 +226,7 @@
     }
 
     @keyframes blink4times {
-      0%, 50% { color: #D32F2F; }
+      0%, 50% { color: white; }
       50.1%, 99.9% { color: black; }
       100% { color: white; }
     }
@@ -586,6 +586,9 @@
     }
 
     function increment(input, delta) {
+      if (interval && !isPaused) {
+        stopTimer();
+      }
       let value = parseInt(input.value) || 0;
       value = Math.max(0, Math.min(59, value + delta));
       input.value = value;
@@ -669,7 +672,7 @@
     function stopBlinking() {
       if (blinkingTimeout) clearTimeout(blinkingTimeout);
       timerEl.classList.remove("blink4");
-      timerEl.style.visibility = 'visible';
+      timerEl.style.color = "white";
     }
 
     function hideControls() {
